@@ -5,7 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from groq import Groq
 
 # Load merged song data
-with open("merged_song_data.json", "r") as f:
+with open("updated_song_data.json", "r") as f:
     song_data = json.load(f)
 
 # Extract features for the model
@@ -86,7 +86,7 @@ def match_songs_to_prompt(user_prompt, top_n=10):
     song_similarities.sort(key=lambda x: x[1], reverse=True)
 
     # Return top N songs
-    return [track for track, _ in song_similarities[:top_n]]
+    return [(track, next(song["spotify_link"] for song in song_data if song["track_name"] == track)) for track, _ in song_similarities[:top_n]]
 
 # Streamlit UI
 st.title("Song Matcher Based on User Prompts")
@@ -98,5 +98,5 @@ if user_prompt:
     st.write("Generating your playlist...")
     playlist = match_songs_to_prompt(user_prompt, top_n=10)
     st.subheader("Generated Playlist")
-    for idx, song in enumerate(playlist, 1):
-        st.write(f"{idx}. {song}")
+    for idx, (song, link) in enumerate(playlist, 1):
+        st.markdown(f"{idx}. [{song}]({link})")
